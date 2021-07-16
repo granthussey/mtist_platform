@@ -155,9 +155,10 @@ def assemble_mtist():
 
 def implement_low_seq_depth():
     offset = 567
+    high_seq_depth_ends_at = 567
 
     # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
-    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
+    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(high_seq_depth_ends_at)]
 
     for fn in fns:
         df = pd.read_csv(fn).drop(columns="Unnamed: 0")
