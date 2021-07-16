@@ -322,13 +322,13 @@ def infer_from_did_lasso_cv(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
-            regs.append(np.nan)
-            slopes.append(np.repeat(np.nan, n_species))
-            intercepts.append(np.array([np.nan]))
+        # if len(cur_dlogydt) == 0:
+            # regs.append(np.nan)
+            # slopes.append(np.repeat(np.nan, n_species))
+            # intercepts.append(np.array([np.nan]))
 
         # Else if we have at least 10 points (required for train-test split), run ElasticNetCV.
-        elif len(cur_dlogydt) >= 10:
+        if len(cur_dlogydt) >= 10:
 
             X_train, X_val, y_train, y_val = train_test_split(
                 cur_gmeans, cur_dlogydt, train_size=0.8, random_state=0
@@ -350,11 +350,15 @@ def infer_from_did_lasso_cv(did, debug=False):
 
         # With sample points between 1 and 10, run a simple linear regression.
         else:
-            reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
+            # reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
 
-            regs.append(reg)
-            intercepts.append(reg.intercept_)
-            slopes.append(reg.coef_)
+            # regs.append(reg)
+            # intercepts.append(reg.intercept_)
+            # slopes.append(reg.coef_)
+
+            regs.append(np.nan)
+            slopes.append(np.repeat(np.nan, n_species))
+            intercepts.append(np.array([np.nan]))
 
     # make em arrays
     slopes = np.vstack(slopes)
@@ -475,13 +479,13 @@ def infer_from_did_ridge_cv(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
-            regs.append(np.nan)
-            slopes.append(np.repeat(np.nan, n_species))
-            intercepts.append(np.array([np.nan]))
+        # if len(cur_dlogydt) == 0:
+            # regs.append(np.nan)
+            # slopes.append(np.repeat(np.nan, n_species))
+            # intercepts.append(np.array([np.nan]))
 
         # Else if we have at least 10 points (required for train-test split), run ElasticNetCV.
-        elif len(cur_dlogydt) >= 10:
+        if len(cur_dlogydt) >= 10:
 
             X_train, X_val, y_train, y_val = train_test_split(
                 cur_gmeans, cur_dlogydt, train_size=0.8, random_state=0
@@ -502,11 +506,16 @@ def infer_from_did_ridge_cv(did, debug=False):
 
         # With sample points between 1 and 10, run a simple linear regression.
         else:
-            reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
+            # reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
+# 
+            # regs.append(reg)
+            # intercepts.append(reg.intercept_)
+            # slopes.append(reg.coef_)
 
-            regs.append(reg)
-            intercepts.append(reg.intercept_)
-            slopes.append(reg.coef_)
+            regs.append(np.nan)
+            slopes.append(np.repeat(np.nan, n_species))
+            intercepts.append(np.array([np.nan]))
+
 
     # make em arrays
     slopes = np.vstack(slopes)
@@ -626,13 +635,13 @@ def infer_from_did_elasticnet_cv(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
-            regs.append(np.nan)
-            slopes.append(np.repeat(np.nan, n_species))
-            intercepts.append(np.array([np.nan]))
+        # if len(cur_dlogydt) == 0:
+            # regs.append(np.nan)
+            # slopes.append(np.repeat(np.nan, n_species))
+            # intercepts.append(np.array([np.nan]))
 
         # Else if we have at least 10 points (required for train-test split), run ElasticNetCV.
-        elif len(cur_dlogydt) >= 10:
+        if len(cur_dlogydt) >= 10:
 
             X_train, X_val, y_train, y_val = train_test_split(
                 cur_gmeans, cur_dlogydt, train_size=0.8, random_state=0
@@ -656,11 +665,16 @@ def infer_from_did_elasticnet_cv(did, debug=False):
 
         # With sample points between 1 and 10, run a simple linear regression.
         else:
-            reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
+            # reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
 
-            regs.append(reg)
-            intercepts.append(reg.intercept_)
-            slopes.append(reg.coef_)
+            # regs.append(reg)
+            # intercepts.append(reg.intercept_)
+            # slopes.append(reg.coef_)
+
+            regs.append(np.nan)
+            slopes.append(np.repeat(np.nan, n_species))
+            intercepts.append(np.array([np.nan]))
+
 
     # make em arrays
     slopes = np.vstack(slopes)
