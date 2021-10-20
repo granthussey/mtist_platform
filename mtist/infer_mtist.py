@@ -138,7 +138,7 @@ def prepare_data_for_inference(did):
     cols = pd.Index(range(len(np.unique(codes))), name="timeseries_id")
     idx = pd.Index(range(X.shape[1]), name="species_id")
 
-    df_times = pd.DataFrame(times, columns=cols, index=idx)
+    # df_times = pd.DataFrame(times, columns=cols, index=idx)
     df_dlogydt = pd.DataFrame(dlogydt, columns=cols, index=idx)
     df_nzmask = pd.DataFrame(nz_masks, columns=cols, index=idx, dtype=bool)
     df_geom = pd.DataFrame(gmeans, columns=cols, index=idx)
@@ -323,9 +323,9 @@ def infer_from_did_lasso_cv(did, debug=False):
 
         # If focal_species has no intervals, return NaNs for inferred.
         # if len(cur_dlogydt) == 0:
-            # regs.append(np.nan)
-            # slopes.append(np.repeat(np.nan, n_species))
-            # intercepts.append(np.array([np.nan]))
+        # regs.append(np.nan)
+        # slopes.append(np.repeat(np.nan, n_species))
+        # intercepts.append(np.array([np.nan]))
 
         # Else if we have at least 10 points (required for train-test split), run ElasticNetCV.
         if len(cur_dlogydt) >= 10:
@@ -480,9 +480,9 @@ def infer_from_did_ridge_cv(did, debug=False):
 
         # If focal_species has no intervals, return NaNs for inferred.
         # if len(cur_dlogydt) == 0:
-            # regs.append(np.nan)
-            # slopes.append(np.repeat(np.nan, n_species))
-            # intercepts.append(np.array([np.nan]))
+        # regs.append(np.nan)
+        # slopes.append(np.repeat(np.nan, n_species))
+        # intercepts.append(np.array([np.nan]))
 
         # Else if we have at least 10 points (required for train-test split), run ElasticNetCV.
         if len(cur_dlogydt) >= 10:
@@ -507,7 +507,7 @@ def infer_from_did_ridge_cv(did, debug=False):
         # With sample points between 1 and 10, run a simple linear regression.
         else:
             # reg = linear_model.LinearRegression().fit(cur_gmeans, cur_dlogydt)
-# 
+            #
             # regs.append(reg)
             # intercepts.append(reg.intercept_)
             # slopes.append(reg.coef_)
@@ -515,7 +515,6 @@ def infer_from_did_ridge_cv(did, debug=False):
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
-
 
     # make em arrays
     slopes = np.vstack(slopes)
@@ -636,9 +635,9 @@ def infer_from_did_elasticnet_cv(did, debug=False):
 
         # If focal_species has no intervals, return NaNs for inferred.
         # if len(cur_dlogydt) == 0:
-            # regs.append(np.nan)
-            # slopes.append(np.repeat(np.nan, n_species))
-            # intercepts.append(np.array([np.nan]))
+        # regs.append(np.nan)
+        # slopes.append(np.repeat(np.nan, n_species))
+        # intercepts.append(np.array([np.nan]))
 
         # Else if we have at least 10 points (required for train-test split), run ElasticNetCV.
         if len(cur_dlogydt) >= 10:
@@ -674,7 +673,6 @@ def infer_from_did_elasticnet_cv(did, debug=False):
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
-
 
     # make em arrays
     slopes = np.vstack(slopes)
@@ -780,7 +778,12 @@ def infer_and_score_all(save_inference=True, save_scores=True):
     if save_inference:
 
         try:
-            os.mkdir(os.path.join(GLOBALS.MTIST_DATASET_DIR, "inference_result"))
+            os.mkdir(
+                os.path.join(
+                    GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                )
+            )
         except Exception as e:
             print(e)
 
@@ -788,7 +791,9 @@ def infer_and_score_all(save_inference=True, save_scores=True):
             did = key
             np.savetxt(
                 os.path.join(
-                    GLOBALS.MTIST_DATASET_DIR, "inference_result", f"inferred_aij_{did}.csv"
+                    GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_aij_{did}.csv",
                 ),
                 inferred_aijs[key],
                 delimiter=",",
@@ -796,7 +801,11 @@ def infer_and_score_all(save_inference=True, save_scores=True):
 
     if save_scores:
         df_es_scores.to_csv(
-            os.path.join(GLOBALS.MTIST_DATASET_DIR, "inference_result", "es_scores.csv")
+            os.path.join(
+                GLOBALS.MTIST_DATASET_DIR,
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}es_scores.csv",
+            )
         )
 
     return (df_es_scores, inferred_aijs)
@@ -806,6 +815,10 @@ class INFERENCE_DEFAULTS:
 
     # Set INFERENCE_FUNCTION to a handle that takes did and spits out
     # an inferred Aij
+
+    # If changing the inference function and wish to save the result,
+    # change the inference prefix (end it in like a _ or something)
     INFERENCE_FUNCTION = infer_from_did
+    INFERENCE_PREFIX = ""
 
     inference_threshold = 1 / 3
