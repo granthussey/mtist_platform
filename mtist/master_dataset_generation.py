@@ -25,7 +25,7 @@ class MASTER_DATASET_DEFAULTS:
        10646715, 10999907]
     # fmt: on
 
-    noises = [0.01, 0.05, 0.10]
+    NOISE_SCALES = [0.01, 0.05, 0.10]
 
 
 def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True):
@@ -36,7 +36,7 @@ def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True
     tend = MASTER_DATASET_DEFAULTS.tend
     dt = MASTER_DATASET_DEFAULTS.dt
     sample_freq = MASTER_DATASET_DEFAULTS.sample_freq
-    noises = MASTER_DATASET_DEFAULTS.noises
+    noises = MASTER_DATASET_DEFAULTS.NOISE_SCALES
 
     # Initialize conditions
     conditions = []
@@ -188,7 +188,7 @@ def generate_toy_datasets(save_datasets=True, plot_example_figures=True):
     tend = MASTER_DATASET_DEFAULTS.tend
     dt = MASTER_DATASET_DEFAULTS.dt
     sample_freq = MASTER_DATASET_DEFAULTS.sample_freq
-    noises = MASTER_DATASET_DEFAULTS.noises
+    noises = MASTER_DATASET_DEFAULTS.NOISE_SCALES
 
     # Initialize conditions
     conditions = []

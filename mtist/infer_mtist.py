@@ -7,12 +7,15 @@ from sklearn import linear_model
 from sklearn.model_selection import train_test_split
 from mtist.mtist_utils import GLOBALS, load_dataset, load_ground_truths
 
+from mtist import mtist_utils as mu
+
 
 def calc_dlogydt(x, times):
     """x: an n_timepoints long column vector, from one timeseries, of one species
     times: an n_timepoints long column vector of corresponding timepoints
 
     returns: (dlogydts, dts, times)
+    Notice: the `dlogydts` here is NOT divided by dt. That is done in subsequent function `prepare_data_for_inference`.
     """
 
     n_intervals = len(x) - 1
@@ -115,8 +118,8 @@ def prepare_data_for_inference(did):
             # Calculate dlogydt, dt, times#
             x, y, z, _ = calc_dlogydt(cur_species, full_time_column[mask])
 
-            dlogydt[i_code].append(x)
-            dt[i_code].append(y)
+            dlogydt[i_code].append(x / y)  # divide by dt is done here
+            dt[i_code].append(y)  # never used again
             times[i_code].append(z)
 
             # Calculate geom_mean for each individal interval
@@ -740,7 +743,10 @@ def infer_and_score_all(save_inference=True, save_scores=True):
     # Begin inference
 
     # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
-    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
+    # fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
+
+    n_datasets = mu.calculate_n_datasets()
+    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)]
 
     th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
     raw_scores = {}

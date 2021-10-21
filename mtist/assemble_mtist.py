@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from mtist import mtist_utils as mu
 from mtist.mtist_utils import GLOBALS
 
 
@@ -14,7 +15,6 @@ class ASSEMBLE_MTIST_DEFAULTS:
     N_TIMESERIES_PARAMS = [5, 10, 50]
     SAMPLING_FREQ_PARAMS = [5, 10, 15]
     SAMPLING_SCHEME_PARAMS = ["even", "random", "seq"]
-
 
 
 ### GLOBAL VARIABLES ###
@@ -50,112 +50,112 @@ def gen_random_idx(sf, rng):
     return idx
 
 
-def assemble_mtist():
+# def assemble_mtist():
 
-    # mdataset_fps = glob.glob(os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
+#     # mdataset_fps = glob.glob(os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
 
-    ## Gather what master datasets/conditions will go into each mtist dataset ##
-    master_meta = pd.read_csv(
-        os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
-    ).set_index("master_did")
+#     ## Gather what master datasets/conditions will go into each mtist dataset ##
+#     master_meta = pd.read_csv(
+#         os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
+#     ).set_index("master_did")
 
-    # Collect indices for the datasets per `name`, `noise`
-    grp = master_meta.groupby(["name", "noise"])
+#     # Collect indices for the datasets per `name`, `noise`
+#     grp = master_meta.groupby(["name", "noise"])
 
-    name_noise_dict = {}
-    for (name, noise), df in grp:
-        name_noise_dict[(name, noise)] = df.index
+#     name_noise_dict = {}
+#     for (name, noise), df in grp:
+#         name_noise_dict[(name, noise)] = df.index
 
-    # Distribute the n_timeseries throughout
-    # the noise/ground truth combinations
-    n_timeseries_params = [5, 10, 50]
+#     # Distribute the n_timeseries throughout
+#     # the noise/ground truth combinations
+#     n_timeseries_params = [5, 10, 50]
 
-    name_noise_nts_dict = {}
-    for name, noise in name_noise_dict.keys():
+#     name_noise_nts_dict = {}
+#     for name, noise in name_noise_dict.keys():
 
-        # In this inner loop, make name_noise_nts an expanded
-        # version of name_noise_dict that now also includes the
-        # "n_timeseries variable"
-        for each_n_timeseries in n_timeseries_params:
-            name_noise_nts_dict[(name, noise, each_n_timeseries)] = name_noise_dict[name, noise][
-                0:each_n_timeseries
-            ]
+#         # In this inner loop, make name_noise_nts an expanded
+#         # version of name_noise_dict that now also includes the
+#         # "n_timeseries variable"
+#         for each_n_timeseries in n_timeseries_params:
+#             name_noise_nts_dict[(name, noise, each_n_timeseries)] = name_noise_dict[name, noise][
+#                 0:each_n_timeseries
+#             ]
 
-    # Finally, duplicate out the conditions for all parameters
-    sampling_scheme_params = ["even", "random", "seq"]
-    sampling_freq_params = [5, 10, 15]
+#     # Finally, duplicate out the conditions for all parameters
+#     sampling_scheme_params = ["even", "random", "seq"]
+#     sampling_freq_params = [5, 10, 15]
 
-    full_conditions_dict = {}
-    for name, noise, nts in name_noise_nts_dict.keys():
-        for ss in sampling_scheme_params:
-            for sf in sampling_freq_params:
+#     full_conditions_dict = {}
+#     for name, noise, nts in name_noise_nts_dict.keys():
+#         for ss in sampling_scheme_params:
+#             for sf in sampling_freq_params:
 
-                # Just copy those indices since they'll be the same for each
-                # combination of sample_scheme and sample_frequency
-                full_conditions_dict[name, noise, nts, ss, sf] = name_noise_nts_dict[
-                    name, noise, nts
-                ].copy()
+#                 # Just copy those indices since they'll be the same for each
+#                 # combination of sample_scheme and sample_frequency
+#                 full_conditions_dict[name, noise, nts, ss, sf] = name_noise_nts_dict[
+#                     name, noise, nts
+#                 ].copy()
 
-    ## ASSEMBLE DATASETS AND SAVE ##
+#     ## ASSEMBLE DATASETS AND SAVE ##
 
-    # Preparation
-    try:
-        os.mkdir(GLOBALS.MTIST_DATASET_DIR)
-    except Exception as e:
-        print(e)
+#     # Preparation
+#     try:
+#         os.mkdir(GLOBALS.MTIST_DATASET_DIR)
+#     except Exception as e:
+#         print(e)
 
-    # Start counting mtist indices
-    did = 0
+#     # Start counting mtist indices
+#     did = 0
 
-    # Create each MTIST dataset given the conditions in the full_conditions_dict
-    for name, noise, nts, ss, sf in full_conditions_dict.keys():
-        mdids_to_load = full_conditions_dict[name, noise, nts, ss, sf]
-        df = pd.DataFrame([])
+#     # Create each MTIST dataset given the conditions in the full_conditions_dict
+#     for name, noise, nts, ss, sf in full_conditions_dict.keys():
+#         mdids_to_load = full_conditions_dict[name, noise, nts, ss, sf]
+#         df = pd.DataFrame([])
 
-        # Create a df to process by ss (sampling_scheme) and sf (sampling_frequency)
-        for mdid in mdids_to_load:
-            df = pd.concat(
-                (
-                    df,
-                    pd.read_csv(
-                        os.path.join(GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{mdid}.csv")
-                    ).drop(columns="Unnamed: 0"),
-                )
-            )
+#         # Create a df to process by ss (sampling_scheme) and sf (sampling_frequency)
+#         for mdid in mdids_to_load:
+#             df = pd.concat(
+#                 (
+#                     df,
+#                     pd.read_csv(
+#                         os.path.join(GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{mdid}.csv")
+#                     ).drop(columns="Unnamed: 0"),
+#                 )
+#             )
 
-        # Initiate rng
-        cur_rng = np.random.default_rng(ASSEMBLE_MTIST_DEFAULTS.RANDOM_SEED)
+#         # Initiate rng
+#         cur_rng = np.random.default_rng(ASSEMBLE_MTIST_DEFAULTS.RANDOM_SEED)
 
-        # Start sampling
-        df_sampled = pd.DataFrame([])
-        for tid, subset in df.groupby("timeseries_id"):
-            sp_cols = subset.columns[subset.columns.str.contains("species_")]
+#         # Start sampling
+#         df_sampled = pd.DataFrame([])
+#         for tid, subset in df.groupby("timeseries_id"):
+#             sp_cols = subset.columns[subset.columns.str.contains("species_")]
 
-            if ss == "even":
-                idx = gen_even_idx(sf)
+#             if ss == "even":
+#                 idx = gen_even_idx(sf)
 
-            elif ss == "random":
-                idx = gen_random_idx(sf, cur_rng)
+#             elif ss == "random":
+#                 idx = gen_random_idx(sf, cur_rng)
 
-            elif ss == "seq":
-                idx = gen_seq_idx(sf, cur_rng)
+#             elif ss == "seq":
+#                 idx = gen_seq_idx(sf, cur_rng)
 
-            df_sampled = pd.concat((df_sampled, subset.iloc[idx]))
+#             df_sampled = pd.concat((df_sampled, subset.iloc[idx]))
 
-        df_sampled = df_sampled.reset_index(drop=True).assign(
-            did=did, seq_depth="high", n_timeseries=nts, n_timepoints=sf, sampling_scheme=ss
-        )
+#         df_sampled = df_sampled.reset_index(drop=True).assign(
+#             did=did, seq_depth="high", n_timeseries=nts, n_timepoints=sf, sampling_scheme=ss
+#         )
 
-        df_sampled.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv"))
+#         df_sampled.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv"))
 
-        did = did + 1
+#         did = did + 1
 
-    ## IMPLEMENT LOW-SEQ-DEPTH ##
-    implement_low_seq_depth()
+#     ## IMPLEMENT LOW-SEQ-DEPTH ##
+#     implement_low_seq_depth()
 
-    ## GENERATE METADATA ##
-    meta = generate_metadata()
-    meta.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
+#     ## GENERATE METADATA ##
+#     meta = generate_metadata()
+#     meta.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
 
 
 def implement_low_seq_depth():
@@ -163,7 +163,10 @@ def implement_low_seq_depth():
     high_seq_depth_ends_at = 567
 
     # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
-    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(high_seq_depth_ends_at)]
+    fns = [
+        os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv")
+        for i in range(high_seq_depth_ends_at)
+    ]
 
     for fn in fns:
         df = pd.read_csv(fn).drop(columns="Unnamed: 0")
@@ -192,7 +195,9 @@ def implement_low_seq_depth():
 
 def generate_metadata():
     # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
-    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
+
+    n_datasets = mu.calculate_n_datasets()
+    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)]
 
     meta = pd.DataFrame([])
     i = 0
@@ -259,7 +264,8 @@ def generate_metadata():
 
     return meta
 
-def assemble_mtist_custom():
+
+def assemble_mtist():
 
     # mdataset_fps = glob.glob(os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
 
@@ -278,8 +284,7 @@ def assemble_mtist_custom():
     # Distribute the n_timeseries throughout
     # the noise/ground truth combinations
     # n_timeseries_params = [5, 10, 50]
-    n_timeseries_params = ASSEMBLE_MTIST_DEFAULTS.N_TIMESERIES_PARAMS 
-
+    n_timeseries_params = ASSEMBLE_MTIST_DEFAULTS.N_TIMESERIES_PARAMS
 
     name_noise_nts_dict = {}
     for name, noise in name_noise_dict.keys():
@@ -295,9 +300,8 @@ def assemble_mtist_custom():
     # Finally, duplicate out the conditions for all parameters
     # sampling_scheme_params = ["even", "random", "seq"]
     # sampling_freq_params = [5, 10, 15]
-    sampling_freq_params = ASSEMBLE_MTIST_DEFAULTS.SAMPLING_FREQ_PARAMS 
-    sampling_scheme_params = ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS 
-
+    sampling_freq_params = ASSEMBLE_MTIST_DEFAULTS.SAMPLING_FREQ_PARAMS
+    sampling_scheme_params = ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS
 
     full_conditions_dict = {}
     for name, noise, nts in name_noise_nts_dict.keys():
@@ -371,3 +375,7 @@ def assemble_mtist_custom():
     meta = generate_metadata()
     meta.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
 
+
+def assemble_mtist_custom():
+    """Function for compatibility reasons"""
+    assemble_mtist()

@@ -6,6 +6,12 @@ import pandas as pd
 
 from mtist import lvsimulator
 
+from mtist import assemble_mtist as am
+from mtist import master_dataset_generation as mdg
+
+from functools import reduce
+import operator
+
 
 class GLOBALS:
 
@@ -322,6 +328,27 @@ def calculate_es_score(true_aij, inferred_aij) -> float:
     ES_score = (unscaled_score - theoretical_min) / (theoretical_max - theoretical_min)
 
     return ES_score
+
+
+def calculate_n_datasets():
+    """Read current set of parameters across global variable class definitions,
+    returns the number of datasets to be produced by that setup.
+
+    Returns:
+        int: number of datasets in MTIST as defined
+    """
+
+    number_of_params = dict(
+        n_timeseries=len(am.ASSEMBLE_MTIST_DEFAULTS.N_TIMESERIES_PARAMS),
+        n_timepoints=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS),
+        n_noises=len(mdg.MASTER_DATASET_DEFAULTS.NOISE_SCALES),
+        n_ecosystems=7,  # Hard coded,
+        n_seq_depths=2,  # Hard coded,
+        n_sampling_schemes=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS),
+    )
+    n_datasets = reduce(operator.mul, number_of_params.values)  # fancy one-line multiplication
+
+    return n_datasets
 
 
 ## SOME STUFF ##

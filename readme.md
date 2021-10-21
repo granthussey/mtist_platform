@@ -54,7 +54,7 @@ You can edit most conditions MTIST Generation uses to produce the datasets. For 
 
 ```python
 from mtist import master_dataset_generation as mdg
-mdg.MASTER_DATASET_DEFAULTS.noises = [0.01, 0.05, 0.20] # if you wanted to see what different noise scale parameters would look like
+mdg.MASTER_DATASET_DEFAULTS.NOISE_SCALES = [0.01, 0.05, 0.20] # if you wanted to see what different noise scale parameters would look like
 
 import mtist_utils
 mtist_utils.GLOBALS.MASTER_DATASET_DIR = "my_new_directory" # change where the master datasets go
@@ -66,7 +66,7 @@ Here is a table of default parameters one might want to change and the value tha
 | Name                | Description                                                                                                           | Default value (type)                                            | Package location                                               |
 |---------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------------------|
 | random_seeds        | Random seeds used to generate the 50 patients                                                                         | See further documentation for default value (list of length 50) | master_dataset_generation.MASTER_DATASET_DEFAULTS.random_seeds |
-| noises              | Noise scales used in generation of master datasets                                                                    | [0.01, 0.05, 0.10] (list)                                       | master_dataset_generation.MASTER_DATASET_DEFAULTS.noises       |
+| noises              | Noise scales used in generation of master datasets                                                                    | [0.01, 0.05, 0.10] (list)                                       | master_dataset_generation.MASTER_DATASET_DEFAULTS.NOISE_SCALES       |
 | seq_depth_th        | Relative abundance threshold for implementing simulated sequencing depth (see paper Methods)                          | 0.1 (float)                                                     | assemble_mtist.ASSEMBLE_MTIST_DEFAULTS.seq_depth_th            |
 | INFERENCE_FUNCTION  | Function used to infer coefficient matrix from MTIST data. See further documentation to mimic its function signature. | Function handle                                                 | infer_mtist.INFERENCE_DEFAULTS.INFERENCE_FUNCTION              |
 | inference_threshold | Threshold used to floor the floored inference result                                                                  | 1/3 (float)                                                     | infer_mtist.INFERENCE_DEFAULTS.inference_threshold             |
