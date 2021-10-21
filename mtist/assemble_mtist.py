@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 from mtist import mtist_utils as mu
-from mtist.mtist_utils import GLOBALS
 
 
 class ASSEMBLE_MTIST_DEFAULTS:
@@ -52,11 +51,11 @@ def gen_random_idx(sf, rng):
 
 # def assemble_mtist():
 
-#     # mdataset_fps = glob.glob(os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
+#     # mdataset_fps = glob.glob(os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
 
 #     ## Gather what master datasets/conditions will go into each mtist dataset ##
 #     master_meta = pd.read_csv(
-#         os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
+#         os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
 #     ).set_index("master_did")
 
 #     # Collect indices for the datasets per `name`, `noise`
@@ -100,7 +99,7 @@ def gen_random_idx(sf, rng):
 
 #     # Preparation
 #     try:
-#         os.mkdir(GLOBALS.MTIST_DATASET_DIR)
+#         os.mkdir(mu.GLOBALS.MTIST_DATASET_DIR)
 #     except Exception as e:
 #         print(e)
 
@@ -118,7 +117,7 @@ def gen_random_idx(sf, rng):
 #                 (
 #                     df,
 #                     pd.read_csv(
-#                         os.path.join(GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{mdid}.csv")
+#                         os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{mdid}.csv")
 #                     ).drop(columns="Unnamed: 0"),
 #                 )
 #             )
@@ -146,7 +145,7 @@ def gen_random_idx(sf, rng):
 #             did=did, seq_depth="high", n_timeseries=nts, n_timepoints=sf, sampling_scheme=ss
 #         )
 
-#         df_sampled.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv"))
+#         df_sampled.to_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv"))
 
 #         did = did + 1
 
@@ -155,16 +154,16 @@ def gen_random_idx(sf, rng):
 
 #     ## GENERATE METADATA ##
 #     meta = generate_metadata()
-#     meta.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
+#     meta.to_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
 
 
 def implement_low_seq_depth():
     offset = 567
     high_seq_depth_ends_at = 567
 
-    # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
+    # fns = glob.glob(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
     fns = [
-        os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv")
+        os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv")
         for i in range(high_seq_depth_ends_at)
     ]
 
@@ -190,14 +189,16 @@ def implement_low_seq_depth():
         new_df["seq_depth"] = "low"
         new_df["did"] = new_did
 
-        new_df.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{new_did}.csv"))
+        new_df.to_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{new_did}.csv"))
 
 
 def generate_metadata():
-    # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
+    # fns = glob.glob(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "dataset_*.csv"))
 
     n_datasets = mu.calculate_n_datasets()
-    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)]
+    fns = [
+        os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)
+    ]
 
     meta = pd.DataFrame([])
     i = 0
@@ -267,11 +268,11 @@ def generate_metadata():
 
 def assemble_mtist():
 
-    # mdataset_fps = glob.glob(os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
+    # mdataset_fps = glob.glob(os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
 
     ## Gather what master datasets/conditions will go into each mtist dataset ##
     master_meta = pd.read_csv(
-        os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
+        os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
     ).set_index("master_did")
 
     # Collect indices for the datasets per `name`, `noise`
@@ -318,7 +319,7 @@ def assemble_mtist():
 
     # Preparation
     try:
-        os.mkdir(GLOBALS.MTIST_DATASET_DIR)
+        os.mkdir(mu.GLOBALS.MTIST_DATASET_DIR)
     except Exception as e:
         print(e)
 
@@ -336,7 +337,7 @@ def assemble_mtist():
                 (
                     df,
                     pd.read_csv(
-                        os.path.join(GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{mdid}.csv")
+                        os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{mdid}.csv")
                     ).drop(columns="Unnamed: 0"),
                 )
             )
@@ -364,7 +365,7 @@ def assemble_mtist():
             did=did, seq_depth="high", n_timeseries=nts, n_timepoints=sf, sampling_scheme=ss
         )
 
-        df_sampled.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv"))
+        df_sampled.to_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv"))
 
         did = did + 1
 
@@ -373,7 +374,7 @@ def assemble_mtist():
 
     ## GENERATE METADATA ##
     meta = generate_metadata()
-    meta.to_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
+    meta.to_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv"))
 
 
 def assemble_mtist_custom():
