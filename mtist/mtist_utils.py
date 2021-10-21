@@ -346,7 +346,9 @@ def calculate_n_datasets():
         n_seq_depths=2,  # Hard coded,
         n_sampling_schemes=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS),
     )
-    n_datasets = reduce(operator.mul, number_of_params.values)  # fancy one-line multiplication
+    n_datasets = reduce(
+        operator.mul, list(number_of_params.values())
+    )  # fancy one-line multiplication
 
     return n_datasets
 
