@@ -340,7 +340,7 @@ def calculate_n_datasets():
 
     number_of_params = dict(
         n_timeseries=len(am.ASSEMBLE_MTIST_DEFAULTS.N_TIMESERIES_PARAMS),
-        n_timepoints=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS),
+        n_timepoints=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_FREQ_PARAMS),
         n_noises=len(mdg.MASTER_DATASET_DEFAULTS.NOISE_SCALES),
         n_ecosystems=7,  # Hard coded,
         n_seq_depths=2,  # Hard coded,

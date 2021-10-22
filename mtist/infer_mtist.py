@@ -5,9 +5,7 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn import linear_model
 from sklearn.model_selection import train_test_split
-from mtist.mtist_utils import GLOBALS, load_dataset, load_ground_truths
-
-from mtist import mtist_utils as mu
+from mtist.mtist_utils import GLOBALS, load_dataset, load_ground_truths, calculate_n_datasets
 
 
 def calc_dlogydt(x, times):
@@ -745,7 +743,7 @@ def infer_and_score_all(save_inference=True, save_scores=True):
     # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
     # fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
 
-    n_datasets = mu.calculate_n_datasets()
+    n_datasets = calculate_n_datasets()
     fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)]
 
     th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
