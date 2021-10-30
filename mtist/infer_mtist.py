@@ -12,8 +12,7 @@ def calc_dlogydt(x, times):
     """x: an n_timepoints long column vector, from one timeseries, of one species
     times: an n_timepoints long column vector of corresponding timepoints
 
-    returns: (dlogydts, dts, times)
-    Notice: the `dlogydts` here is NOT divided by dt. That is done in subsequent function `prepare_data_for_inference`.
+    returns: (dlogydts, dts, times, valid_idxs_list)
     """
 
     n_intervals = len(x) - 1
@@ -116,7 +115,7 @@ def prepare_data_for_inference(did):
             # Calculate dlogydt, dt, times#
             x, y, z, _ = calc_dlogydt(cur_species, full_time_column[mask])
 
-            dlogydt[i_code].append(x / y)  # divide by dt is done here
+            dlogydt[i_code].append(x)
             dt[i_code].append(y)  # never used again
             times[i_code].append(z)
 

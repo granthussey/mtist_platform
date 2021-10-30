@@ -40,7 +40,7 @@ class MASTER_DATASET_DEFAULTS:
     random.seed(89237560)
     extra_50_random_seeds = [round((random.random()*random.randint(500000,10000000))) for i in range(50)]
     expanded_random_seeds = old_random_seeds + extra_50_random_seeds"""
-    
+
     # fmt: on
 
     NOISE_SCALES = [0.01, 0.05, 0.10]
