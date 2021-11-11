@@ -5,7 +5,9 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn import linear_model
 from sklearn.model_selection import train_test_split
-from mtist.mtist_utils import GLOBALS, load_dataset, load_ground_truths, calculate_n_datasets
+
+# from mtist.mtist_utils import mu.GLOBALS, mu.load_dataset, mu.load_ground_truths, mu.calculate_n_datasets
+from mtist import mtist_utils as mu
 
 
 def calc_dlogydt(x, times):
@@ -61,8 +63,8 @@ def prepare_data_for_inference(did):
     # `full_time_column`: is time column (ndarray nrows x 1)
     # `X`: is JUST the abundances (ndarray nrows x n_species)
     # `meta_spec`: is all of the metadata contained in `full_df`
-    path_to_did_dataset = os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv")
-    full_df, full_time_column, X, meta_spec = load_dataset(path_to_did_dataset)
+    path_to_did_dataset = os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{did}.csv")
+    full_df, full_time_column, X, meta_spec = mu.load_dataset(path_to_did_dataset)
 
     # Premise:
     # We must calclate, for every time series (delineated in
@@ -732,18 +734,20 @@ def infer_and_score_all(save_inference=True, save_scores=True):
     """returns df_es_scores, inferred_aijs"""
 
     # Load meta and gts
-    meta = pd.read_csv(os.path.join(GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv")).set_index(
+    meta = pd.read_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv")).set_index(
         "did"
     )
-    aijs, _ = load_ground_truths(GLOBALS.GT_DIR)
+    aijs, _ = mu.load_ground_truths(mu.GLOBALS.GT_DIR)
 
     # Begin inference
 
-    # fns = glob.glob(os.path.join(GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
-    # fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
+    # fns = glob.glob(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
+    # fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
 
-    n_datasets = calculate_n_datasets()
-    fns = [os.path.join(GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)]
+    n_datasets = mu.calculate_n_datasets()
+    fns = [
+        os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)
+    ]
 
     th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
     raw_scores = {}
@@ -783,7 +787,7 @@ def infer_and_score_all(save_inference=True, save_scores=True):
         try:
             os.mkdir(
                 os.path.join(
-                    GLOBALS.MTIST_DATASET_DIR,
+                    mu.GLOBALS.MTIST_DATASET_DIR,
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
                 )
             )
@@ -794,7 +798,7 @@ def infer_and_score_all(save_inference=True, save_scores=True):
             did = key
             np.savetxt(
                 os.path.join(
-                    GLOBALS.MTIST_DATASET_DIR,
+                    mu.GLOBALS.MTIST_DATASET_DIR,
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_aij_{did}.csv",
                 ),
@@ -805,7 +809,7 @@ def infer_and_score_all(save_inference=True, save_scores=True):
     if save_scores:
         df_es_scores.to_csv(
             os.path.join(
-                GLOBALS.MTIST_DATASET_DIR,
+                mu.GLOBALS.MTIST_DATASET_DIR,
                 f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
                 f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}es_scores.csv",
             )

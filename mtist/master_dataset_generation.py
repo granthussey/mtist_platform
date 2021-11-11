@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 
 from mtist.graphing_utils import despine, easy_subplots, savefig
-from mtist.mtist_utils import GLOBALS, load_ground_truths, simulate
+
+# from mtist.mtist_utils import mu.GLOBALS, mu.load_ground_truths, mu.simulate
+from mtist import mtist_utils as mu
 
 
 class MASTER_DATASET_DEFAULTS:
@@ -47,7 +49,7 @@ class MASTER_DATASET_DEFAULTS:
 
 
 def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True):
-    """Simulate and save master datasets by parameters outlined in MASTER_DATASET_DEFAULTS class"""
+    """mu.simulate and save master datasets by parameters outlined in MASTER_DATASET_DEFAULTS class"""
 
     ### Gather current conditions ###
     random_seeds = MASTER_DATASET_DEFAULTS.random_seeds
@@ -63,7 +65,7 @@ def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True
             conditions.append((seed, noise))
 
     # Load ground truths
-    aijs, grs = load_ground_truths(GLOBALS.GT_DIR)
+    aijs, grs = mu.load_ground_truths(mu.GLOBALS.GT_DIR)
 
     gt_names = [
         "3_sp_gt_1",
@@ -80,7 +82,7 @@ def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True
     results = {}
     for name, aij, gr in zip(gt_names, aijs.values(), grs.values()):
         for seed, noise in conditions:
-            t, y = simulate(aij, gr, seed, noise, tend, dt, sample_freq)
+            t, y = mu.simulate(aij, gr, seed, noise, tend, dt, sample_freq)
             results[(name, seed, noise)] = t, y
 
     ### MAKE RESULTS INTO FORMATTED DATAFRAME ###
@@ -104,13 +106,13 @@ def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True
     ### SAVE IF NEEDED ###
     if save_datasets:
         try:
-            os.mkdir(GLOBALS.MASTER_DATASET_DIR)
+            os.mkdir(mu.GLOBALS.MASTER_DATASET_DIR)
         except Exception as e:
             print(e)
 
         # SAVE the metadata
         df_results[["name", "seed", "noise"]].to_csv(
-            os.path.join(GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
+            os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, "master_metadata.csv")
         )
 
         # SAVE the master datasets
@@ -134,7 +136,7 @@ def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True
 
             # Save each dataset indexed by master dataset index
             formatted_master_df.to_csv(
-                os.path.join(GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{idx}.csv")
+                os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, f"master_dataset_{idx}.csv")
             )
 
     elif save_datasets is False:
@@ -176,7 +178,7 @@ def plot_master_datasets(df_results, save=False):
             savefig(
                 fig,
                 os.path.join(
-                    GLOBALS.MASTER_DATASET_DIR, f"master_dataset_graphed_{name}_noise_{noise}"
+                    mu.GLOBALS.MASTER_DATASET_DIR, f"master_dataset_graphed_{name}_noise_{noise}"
                 ),
                 ft="jpg",
             )
@@ -215,7 +217,7 @@ def generate_toy_datasets(save_datasets=True, plot_example_figures=True):
             conditions.append((seed, noise))
 
     # Load ground truths
-    aijs, grs = load_ground_truths(GLOBALS.GT_DIR)
+    aijs, grs = mu.load_ground_truths(mu.GLOBALS.GT_DIR)
 
     # fmt: off
     gt_names = TOY_DATASET_DEFAULTS.gt_names # CHANGE EXISTS HERE
@@ -227,7 +229,7 @@ def generate_toy_datasets(save_datasets=True, plot_example_figures=True):
         aij = aijs[name]                # CHANGE EXISTS HERE
         gr = grs[name]                  # CHANGE EXISTS HERE
         for seed, noise in conditions:
-            t, y = simulate(aij, gr, seed, noise, tend, dt, sample_freq)
+            t, y = mu.simulate(aij, gr, seed, noise, tend, dt, sample_freq)
             results[(name, seed, noise)] = t, y
 
     # fmt: on
@@ -253,13 +255,13 @@ def generate_toy_datasets(save_datasets=True, plot_example_figures=True):
     ### SAVE IF NEEDED ###
     if save_datasets:
         try:
-            os.mkdir(GLOBALS.TOY_DATASET_DIR)
+            os.mkdir(mu.GLOBALS.TOY_DATASET_DIR)
         except Exception as e:
             print(e)
 
         # SAVE the metadata
         df_results[["name", "seed", "noise"]].to_csv(
-            os.path.join(GLOBALS.TOY_DATASET_DIR, "master_metadata.csv")
+            os.path.join(mu.GLOBALS.TOY_DATASET_DIR, "master_metadata.csv")
         )
 
         # SAVE the master datasets
@@ -283,7 +285,7 @@ def generate_toy_datasets(save_datasets=True, plot_example_figures=True):
 
             # Save each dataset indexed by master dataset index
             formatted_master_df.to_csv(
-                os.path.join(GLOBALS.TOY_DATASET_DIR, f"master_dataset_{idx}.csv")
+                os.path.join(mu.GLOBALS.TOY_DATASET_DIR, f"master_dataset_{idx}.csv")
             )
 
     elif save_datasets is False:
