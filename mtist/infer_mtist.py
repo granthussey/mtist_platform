@@ -2,9 +2,12 @@ import os
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+import pymc3 as pm
+import statsmodels.api as sm
 from sklearn import linear_model
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+import xarray as xr
 
 # from mtist.mtist_utils import mu.GLOBALS, mu.load_dataset, mu.load_ground_truths, mu.calculate_n_datasets
 from mtist import mtist_utils as mu
@@ -688,6 +691,134 @@ def infer_from_did_elasticnet_cv(did, debug=False):
         return inferred
 
 
+def run_mkspikeseq(X, y, progressbar=False):
+
+    """regresses X on y using MKSpikeSeq, returns trace"""
+
+    # Set up priors for model
+    Sigma_taxa = 0.5 * np.matmul(X.T, X)
+    Sigma_taxa += np.diag(np.diag(Sigma_taxa))
+    Sigma_taxa = np.linalg.inv(Sigma_taxa)
+    # Sigma_taxa = np.identity(len(Sigma_taxa)) # alternatively use identity matrix (results same)
+
+    # Sigma_drugs = 0.5 * np.matmul(X_drugs.T.values, X_drugs.values)
+    # Sigma_drugs += np.diag(np.diag(Sigma_drugs))
+    # Sigma_drugs = np.linalg.inv(Sigma_drugs)
+    # Sigma_drugs = np.identity(len(Sigma_drugs)) # alternatively use identity matrix (results same)
+
+    # For calculating growth rate initialisation
+    X_growth = sm.add_constant(X)  # empty row of 1's for intercept
+    # Y = my_all_Y[focal_species].copy()
+    # r_model = sm.OLS(Y, X_growth)
+    r_model = sm.OLS(y, X_growth)
+
+    results = r_model.fit()
+    init_r = results.params[0]  # First param will be the INTERCEPT
+    if init_r < 0:
+        init_r = 0
+
+    init_r_std = np.std(results.params)  # inflate initial prior for intercept
+
+    with pm.Model() as model:
+
+        xi_taxa = pm.Bernoulli("xi_taxa", 0.5, shape=X.shape[1])
+        tau_taxa = pm.HalfCauchy("tau_taxa", 1)
+        beta_taxa = pm.MvNormal("beta_taxa", 0, tau_taxa * Sigma_taxa, shape=X.shape[1])
+        mean_taxa = pm.math.dot(X, xi_taxa * beta_taxa)
+
+        # xi_drugs = pm.Bernoulli("xi_drugs", 0.5, shape=X.shape[1])
+        # tau_drugs = pm.HalfCauchy("tau_drugs", 1)
+        # beta_drugs = pm.MvNormal(
+        #     "beta_drugs", 0, tau_drugs * Sigma_drugs, shape=X.shape[1]
+        # )
+        # mean_drugs = pm.math.dot(X_drugs, xi_drugs * beta_drugs)
+
+        my_sigma = pm.HalfNormal("my_sigma", 10)
+
+        intercp = pm.Bound(pm.Normal, lower=0.0)("intercp", mu=1.0, tau=(init_r_std ** 2) * 1e2)
+
+        # my_var = pm.Normal("my_var", mean_drugs + mean_taxa + intercp, my_sigma, observed=y)
+        my_var = pm.Normal("my_var", mean_taxa + intercp, my_sigma, observed=y)
+
+        trace = pm.sample(
+            draws=20000,
+            tune=2500,
+            init="adapt_diag",
+            cores=-1,
+            return_inferencedata=True,
+            progressbar=progressbar,
+        )
+
+    return trace
+
+
+def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True):
+
+    df_geom, df_dlogydt, df_nzmask, n_species = prepare_data_for_inference(did)
+
+    ####### BEGIN THE INFERENCE!!!!! #######
+    regs = []
+    intercepts = []
+    slopes = []
+
+    # # For debugging if needed
+    # info = dict(dlogydts=[], masks=[], gmeans=[], species=[], shapes=[])
+
+    # Begin inference for each and every focal_species
+    for focal_species in range(n_species):
+
+        # Get the y to be predicted
+        cur_dlogydt = np.concatenate(df_dlogydt.loc[focal_species].values)
+        cur_mask = np.concatenate(df_nzmask.loc[focal_species].values)  # based on valid y's
+
+        # Get the X to predict, only take valid intervals
+        cur_gmeans = np.array(
+            [np.concatenate(df_geom.loc[i, :].values) for i in range(n_species)]
+        ).T
+        cur_gmeans = cur_gmeans[cur_mask, :].copy()
+
+        # If focal_species has no intervals, return NaNs for inferred.
+        if len(cur_dlogydt) == 0:
+            regs.append(np.nan)
+            slopes.append(np.repeat(np.nan, n_species))
+            intercepts.append(np.array([np.nan]))
+
+        # Otherwise, regress.
+        else:
+            try:
+                trace = run_mkspikeseq(cur_gmeans, cur_dlogydt, progressbar=progressbar)
+
+                cur_slopes = (
+                    trace["posterior"]["beta_taxa"].values.reshape(-1, n_species).mean(axis=0)
+                )
+                cur_intercept = trace["posterior"]["intercp"].values.mean()
+
+            except ValueError:
+                # return ("broken", did, info)
+                reg = ["broken"]
+
+            # regs.append(trace)
+            intercepts.append(cur_intercept)
+            slopes.append(cur_slopes)
+            regs.append(trace)
+
+    slopes = np.vstack(slopes)
+    intercepts = np.vstack(intercepts)
+
+    if save_trace:
+        for cur_trace_number, trace in enumerate(regs):
+            trace.to_netcdf(
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}trace_{cur_trace_number}_for_{did}.nc",
+                ),
+                mode="w",
+            )
+
+    return (slopes, intercepts)
+
+
 def calculate_es_score(true_aij, inferred_aij) -> float:
     """GRANT'S edited version to calculate ED score
 
@@ -814,6 +945,94 @@ def infer_and_score_all(save_inference=True, save_scores=True):
                 f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}es_scores.csv",
             )
         )
+
+    return (df_es_scores, inferred_aijs)
+
+
+def infer_and_save_portion(dids, save_inference=True, save_scores=True):
+    """returns df_es_scores, inferred_aijs"""
+
+    # Load meta and gts
+    meta = pd.read_csv(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "mtist_metadata.csv")).set_index(
+        "did"
+    )
+    aijs, _ = mu.load_ground_truths(mu.GLOBALS.GT_DIR)
+
+    # Begin inference
+
+    # fns = glob.glob(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
+    # fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
+
+    # n_datasets = mu.calculate_n_datasets()
+    fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in dids]
+
+    th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
+    raw_scores = {}
+    floored_scores = {}
+    inferred_aijs = {}
+
+    for fn in fns:
+
+        # Complete the inference
+        did = int(fn.split(".csv")[0].split("dataset_")[-1])
+        inferred_aij, _ = INFERENCE_DEFAULTS.INFERENCE_FUNCTION(did)
+
+        # Obtain gt used in the dataset
+        gt_used = meta.loc[did, "ground_truth"]
+        true_aij = aijs[gt_used]
+
+        # Calculate raw ES score
+        es_score = calculate_es_score(true_aij, inferred_aij)
+
+        # Calculate floored ES score
+        floored_inferred_aij = inferred_aij.copy()  # copy aij
+        mask = np.abs(floored_inferred_aij) < th  # determine where to floor
+        floored_inferred_aij[mask] = 0  # floor below the th
+        es_score_floored = calculate_es_score(true_aij, floored_inferred_aij)
+
+        # Save the scores
+        raw_scores[did] = es_score
+        floored_scores[did] = es_score_floored
+        inferred_aijs[did] = inferred_aij.copy()
+
+    df_es_scores = pd.DataFrame(
+        [raw_scores, floored_scores], index=["raw", "floored"]
+    ).T.sort_index()
+
+    if save_inference:
+
+        try:
+            os.mkdir(
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                )
+            )
+        except Exception as e:
+            print(e)
+
+        for key in inferred_aijs.keys():
+            did = key
+            np.savetxt(
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_aij_{did}.csv",
+                ),
+                inferred_aijs[key],
+                delimiter=",",
+            )
+
+    # Need to engineer an "appending" method for this
+
+    # if save_scores:
+    #     df_es_scores.to_csv(
+    #         os.path.join(
+    #             mu.GLOBALS.MTIST_DATASET_DIR,
+    #             f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+    #             f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}es_scores.csv",
+    #         )
+    #     )
 
     return (df_es_scores, inferred_aijs)
 
