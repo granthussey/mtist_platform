@@ -806,6 +806,17 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
     intercepts = np.vstack(intercepts)
 
     if save_trace:
+
+        try:
+            os.mkdir(
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                )
+            )
+        except Exception as e:
+            print(e)
+
         for cur_trace_number, trace in enumerate(regs):
             trace.to_netcdf(
                 os.path.join(
@@ -813,7 +824,6 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}trace_{cur_trace_number}_for_{did}.nc",
                 ),
-                mode="w",
             )
 
     return (slopes, intercepts)
