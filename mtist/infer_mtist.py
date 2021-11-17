@@ -695,6 +695,8 @@ def run_mkspikeseq(X, y, progressbar=False):
 
     """regresses X on y using MKSpikeSeq, returns trace"""
 
+    print(X.shape)
+
     # Set up priors for model
     Sigma_taxa = 0.5 * np.matmul(X.T, X)
     Sigma_taxa += np.diag(np.diag(Sigma_taxa))
@@ -734,7 +736,6 @@ def run_mkspikeseq(X, y, progressbar=False):
         # mean_drugs = pm.math.dot(X_drugs, xi_drugs * beta_drugs)
 
         my_sigma = pm.HalfNormal("my_sigma", 10)
-
         intercp = pm.Bound(pm.Normal, lower=0.0)("intercp", mu=1.0, tau=(init_r_std ** 2) * 1e2)
 
         # my_var = pm.Normal("my_var", mean_drugs + mean_taxa + intercp, my_sigma, observed=y)
@@ -818,7 +819,7 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
             print(e)
 
         for cur_trace_number, trace in enumerate(regs):
-            trace.to_netcdf(
+            trace["posterior"].to_netcdf(
                 os.path.join(
                     mu.GLOBALS.MTIST_DATASET_DIR,
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
