@@ -831,7 +831,18 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
                 ),
             )
 
-    return (slopes, intercepts)
+            trace["sample_stats"].to_netcdf(
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}sample_stats_{cur_trace_number}_for_{did}.nc",
+                ),
+            )
+
+    if debug:
+        return (slopes, intercepts, regs)
+    else:
+        return (slopes, intercepts)
 
 
 def calculate_es_score(true_aij, inferred_aij) -> float:
