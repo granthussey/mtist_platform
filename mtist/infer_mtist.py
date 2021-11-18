@@ -691,16 +691,20 @@ def infer_from_did_elasticnet_cv(did, debug=False):
         return inferred
 
 
-def run_mkspikeseq(X, y, progressbar=False):
+def run_mkspikeseq(X, y, progressbar=False, zellner=False):
 
     """regresses X on y using MKSpikeSeq, returns trace"""
 
-    print(X.shape)
+    # print(X.shape)
 
     # Set up priors for model
-    Sigma_taxa = 0.5 * np.matmul(X.T, X)
-    Sigma_taxa += np.diag(np.diag(Sigma_taxa))
-    Sigma_taxa = np.linalg.inv(Sigma_taxa)
+    if zellner:
+        Sigma_taxa = 0.5 * np.matmul(X.T, X)
+        Sigma_taxa += np.diag(np.diag(Sigma_taxa))
+        Sigma_taxa = np.linalg.inv(Sigma_taxa)
+
+    else:
+        Sigma_taxa = np.eye(X.shape[1])  # just use identity matrix
     # Sigma_taxa = np.identity(len(Sigma_taxa)) # alternatively use identity matrix (results same)
 
     # Sigma_drugs = 0.5 * np.matmul(X_drugs.T.values, X_drugs.values)
