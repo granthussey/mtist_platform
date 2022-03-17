@@ -123,6 +123,16 @@ class GLOBALS:
     MTIST_DATASET_DIR = "mtist_datasets"
     TOY_DATASET_DIR = "toy_master_datasets"
 
+    GT_NAMES = [
+        "3_sp_gt_1",
+        "3_sp_gt_2",
+        "3_sp_gt_3",
+        "10_sp_gt_1",
+        "10_sp_gt_2",
+        "10_sp_gt_3",
+        "100_sp_gt",
+    ]
+
 
 def create_lv_dicts(aij, gr):
     """Convert aij and gr, represented in ndarrays, into dictionaries compatible with ecosims package
@@ -175,35 +185,40 @@ def load_ground_truths(path=None):
     path_to_aijs = lambda v: os.path.join(path, "interaction_coefficients", v + ".csv")
     path_to_grs = lambda v: os.path.join(path, "growth_rates", v + ".csv")
 
-    aij_names = [
-        "3_sp_aij_1",
-        "3_sp_aij_2",
-        "3_sp_aij_3",
-        "10_sp_aij_1",
-        "10_sp_aij_2",
-        "10_sp_aij_3",
-        "100_sp_aij",
-    ]
+    gt_names = GLOBALS.GT_NAMES
 
-    gr_names = [
-        "3_sp_gr_1",
-        "3_sp_gr_2",
-        "3_sp_gr_3",
-        "10_sp_gr_1",
-        "10_sp_gr_2",
-        "10_sp_gr_3",
-        "100_sp_gr",
-    ]
+    aij_names = pd.Series(gt_names).str.replace("gt", "aij").to_list()
+    gr_names = pd.Series(gt_names).str.replace("gt", "gr").to_list()
 
-    gt_names = [
-        "3_sp_gt_1",
-        "3_sp_gt_2",
-        "3_sp_gt_3",
-        "10_sp_gt_1",
-        "10_sp_gt_2",
-        "10_sp_gt_3",
-        "100_sp_gt",
-    ]
+    # aij_names = [
+    #     "3_sp_aij_1",
+    #     "3_sp_aij_2",
+    #     "3_sp_aij_3",
+    #     "10_sp_aij_1",
+    #     "10_sp_aij_2",
+    #     "10_sp_aij_3",
+    #     "100_sp_aij",
+    # ]
+
+    # gr_names = [
+    #     "3_sp_gr_1",
+    #     "3_sp_gr_2",
+    #     "3_sp_gr_3",
+    #     "10_sp_gr_1",
+    #     "10_sp_gr_2",
+    #     "10_sp_gr_3",
+    #     "100_sp_gr",
+    # ]
+
+    # gt_names = [
+    #     "3_sp_gt_1",
+    #     "3_sp_gt_2",
+    #     "3_sp_gt_3",
+    #     "10_sp_gt_1",
+    #     "10_sp_gt_2",
+    #     "10_sp_gt_3",
+    #     "100_sp_gt",
+    # ]
 
     # Create file names
     aij_fn_to_load = map(path_to_aijs, aij_names)
@@ -342,7 +357,7 @@ def calculate_n_datasets():
         n_timeseries=len(am.ASSEMBLE_MTIST_DEFAULTS.N_TIMESERIES_PARAMS),
         n_timepoints=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_FREQ_PARAMS),
         n_noises=len(mdg.MASTER_DATASET_DEFAULTS.NOISE_SCALES),
-        n_ecosystems=7,  # Hard coded,
+        n_ecosystems=len(GLOBALS.GT_NAMES),
         n_seq_depths=2,  # Hard coded,
         n_sampling_schemes=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS),
     )

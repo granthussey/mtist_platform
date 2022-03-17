@@ -190,7 +190,7 @@ def infer_from_did(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
+        if len(cur_dlogydt) <= 1:
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
@@ -213,6 +213,121 @@ def infer_from_did(did, debug=False):
     intercepts = np.vstack(intercepts)
 
     inferred = (slopes, intercepts)
+
+    if debug:
+        return (inferred, info)
+    else:
+        return inferred
+
+
+def infer_from_did_ols_with_p(did, debug=False, save=False, th=None):
+    """Returns  `inferred` tuple (interaction_coefficients, growth_rates)
+    Will return info as well if debug=True"""
+
+    if th is None:
+        th = 0.001
+
+    df_geom, df_dlogydt, df_nzmask, n_species = prepare_data_for_inference(did)
+
+    ####### BEGIN THE INFERENCE!!!!! #######
+    regs = []
+    intercepts = []
+    slopes = []
+    pvals = []
+
+    # For debugging if needed
+    info = dict(dlogydts=[], masks=[], gmeans=[], species=[], shapes=[])
+
+    # Begin inference for each and every focal_species
+    for focal_species in range(n_species):
+
+        # Get the y to be predicted
+        cur_dlogydt = np.concatenate(df_dlogydt.loc[focal_species].values)
+        cur_mask = np.concatenate(df_nzmask.loc[focal_species].values)
+
+        # Get the X to predict, only take valid intervals
+        cur_gmeans = np.array(
+            [np.concatenate(df_geom.loc[i, :].values) for i in range(n_species)]
+        ).T
+
+        cur_gmeans = cur_gmeans[cur_mask, :].copy()
+
+        # Update debug info
+        info["dlogydts"].append(cur_dlogydt)
+        info["masks"].append(cur_mask)
+        info["gmeans"].append(cur_gmeans)
+        info["species"].append(focal_species)
+        info["shapes"].append(
+            dict(dlogydt=cur_dlogydt.shape, mask=cur_mask.shape, gmeans=cur_gmeans.shape)
+        )
+
+        # If focal_species has no intervals, or a single interval, return NaNs for inferred.
+        if len(cur_dlogydt) <= 1:
+            regs.append(np.nan)
+            slopes.append(np.repeat(np.nan, n_species))
+            intercepts.append(np.array([np.nan]))
+            pvals.append(np.repeat(np.nan, n_species))
+
+        # Otherwise, regress.
+        else:
+            try:
+                cur_gmeans_with_intercept = sm.add_constant(cur_gmeans)
+                model = sm.OLS(cur_dlogydt, cur_gmeans_with_intercept)
+                reg = model.fit()
+
+                cur_intercept = reg.params[0]
+                cur_slopes = reg.params[1::]  # only for coefs
+                cur_pvals = reg.pvalues[1::]  # only for coefs
+            except ValueError:
+                return ("broken", did, info)
+
+            regs.append(reg)
+            intercepts.append(cur_intercept)
+            slopes.append(cur_slopes)
+            pvals.append(cur_pvals)
+
+    # Return all solutions!
+
+    # make em arrays
+    slopes = np.vstack(slopes)
+    intercepts = np.vstack(intercepts)
+    pvals = np.vstack(pvals)
+
+    # Now set the pvals below a threshold, here hard-coded as 0.05, to 0.
+
+    # print(slopes)
+    # print(pvals)
+    slopes = pd.DataFrame(slopes)
+    pvals = pd.DataFrame(pvals)
+
+    # keep only slopes that are "significant"
+    slopes = slopes[pvals < th].fillna(0)
+    slopes = slopes.values
+
+    # print(slopes)
+
+    inferred = (slopes, intercepts)
+
+    if save:
+        try:
+            os.mkdir(
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"ols_pvals",
+                )
+            )
+        except Exception as e:
+            print(e)
+
+        np.savetxt(
+            os.path.join(
+                mu.GLOBALS.MTIST_DATASET_DIR,
+                f"ols_pvals",
+                f"ols_pvals_{did}.csv",
+            ),
+            pvals,
+            delimiter=",",
+        )
 
     if debug:
         return (inferred, info)
@@ -259,7 +374,7 @@ def infer_from_did_lasso(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
+        if len(cur_dlogydt) <= 1:
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
@@ -327,7 +442,7 @@ def infer_from_did_lasso_cv(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        # if len(cur_dlogydt) == 0:
+        # if len(cur_dlogydt) <= 1:
         # regs.append(np.nan)
         # slopes.append(np.repeat(np.nan, n_species))
         # intercepts.append(np.array([np.nan]))
@@ -416,7 +531,7 @@ def infer_from_did_ridge(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
+        if len(cur_dlogydt) <= 1:
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
@@ -484,7 +599,7 @@ def infer_from_did_ridge_cv(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        # if len(cur_dlogydt) == 0:
+        # if len(cur_dlogydt) <= 1:
         # regs.append(np.nan)
         # slopes.append(np.repeat(np.nan, n_species))
         # intercepts.append(np.array([np.nan]))
@@ -571,7 +686,7 @@ def infer_from_did_elasticnet(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
+        if len(cur_dlogydt) <= 1:
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
@@ -639,7 +754,7 @@ def infer_from_did_elasticnet_cv(did, debug=False):
         )
 
         # If focal_species has no intervals, return NaNs for inferred.
-        # if len(cur_dlogydt) == 0:
+        # if len(cur_dlogydt) <= 1:
         # regs.append(np.nan)
         # slopes.append(np.repeat(np.nan, n_species))
         # intercepts.append(np.array([np.nan]))
@@ -783,7 +898,7 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
         cur_gmeans = cur_gmeans[cur_mask, :].copy()
 
         # If focal_species has no intervals, return NaNs for inferred.
-        if len(cur_dlogydt) == 0:
+        if len(cur_dlogydt) <= 1:
             regs.append(np.nan)
             slopes.append(np.repeat(np.nan, n_species))
             intercepts.append(np.array([np.nan]))
