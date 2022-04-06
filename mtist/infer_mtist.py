@@ -954,6 +954,26 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
                 ),
             )
 
+        np.savetxt(
+            os.path.join(
+                mu.GLOBALS.MTIST_DATASET_DIR,
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_for_{did}.csv",
+            ),
+            slopes,
+            delimiter=",",
+        )
+
+        np.savetxt(
+            os.path.join(
+                mu.GLOBALS.MTIST_DATASET_DIR,
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}growth_rates_for_{did}.csv",
+            ),
+            intercepts,
+            delimiter=",",
+        )
+
     if debug:
         return (slopes, intercepts, regs)
     else:
@@ -1108,6 +1128,7 @@ def infer_and_save_portion(dids, save_inference=True, save_scores=True):
     fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in dids]
 
     th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
+
     raw_scores = {}
     floored_scores = {}
     inferred_aijs = {}
@@ -1135,6 +1156,11 @@ def infer_and_save_portion(dids, save_inference=True, save_scores=True):
         raw_scores[did] = es_score
         floored_scores[did] = es_score_floored
         inferred_aijs[did] = inferred_aij.copy()
+
+
+        # test saving per did
+
+
 
     df_es_scores = pd.DataFrame(
         [raw_scores, floored_scores], index=["raw", "floored"]
