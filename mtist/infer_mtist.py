@@ -861,8 +861,8 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
         my_var = pm.Normal("my_var", mean_taxa + intercp, my_sigma, observed=y)
 
         trace = pm.sample(
-            draws=20000,
-            tune=2500,
+            draws=30000,
+            tune=5000,
             init="adapt_diag",
             cores=-1,
             return_inferencedata=True,
