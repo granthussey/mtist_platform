@@ -810,6 +810,9 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
 
     """regresses X on y using MKSpikeSeq, returns trace"""
 
+    # NORMALIZE X
+    X = (X - np.mean(X)) / np.std(X)
+
     # print(X.shape)
 
     # Set up priors for model
@@ -861,8 +864,10 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
         my_var = pm.Normal("my_var", mean_taxa + intercp, my_sigma, observed=y)
 
         trace = pm.sample(
-            draws=30000,
-            tune=5000,
+            # draws=15000,
+            # tune=3000,
+            draws=2000,
+            tune=500,
             init="adapt_diag",
             cores=-1,
             return_inferencedata=True,
@@ -873,6 +878,9 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
 
 
 def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True):
+
+    # Zero cutoff factor
+    cutoff = 0.01 / 19.161194626965624
 
     df_geom, df_dlogydt, df_nzmask, n_species = prepare_data_for_inference(did)
 
@@ -924,6 +932,11 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
 
     slopes = np.vstack(slopes)
     intercepts = np.vstack(intercepts)
+
+    # pd.DataFrame(slopes)[~pd.DataFrame(np.abs(slopes) < cutoff)].fillna(0)
+
+    if debug:
+        return slopes
 
     if save_trace:
 
@@ -1157,10 +1170,7 @@ def infer_and_save_portion(dids, save_inference=True, save_scores=True):
         floored_scores[did] = es_score_floored
         inferred_aijs[did] = inferred_aij.copy()
 
-
         # test saving per did
-
-
 
     df_es_scores = pd.DataFrame(
         [raw_scores, floored_scores], index=["raw", "floored"]
