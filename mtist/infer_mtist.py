@@ -933,10 +933,8 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
     slopes = np.vstack(slopes)
     intercepts = np.vstack(intercepts)
 
-    # pd.DataFrame(slopes)[~pd.DataFrame(np.abs(slopes) < cutoff)].fillna(0)
-
-    if debug:
-        return slopes
+    # set values below the cutoff to zero
+    cutoff_slopes = pd.DataFrame(slopes)[~pd.DataFrame(np.abs(slopes) < cutoff)].fillna(0).values
 
     if save_trace:
 
@@ -976,6 +974,17 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
             slopes,
             delimiter=",",
         )
+
+        np.savetxt(
+            os.path.join(
+                mu.GLOBALS.MTIST_DATASET_DIR,
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_for_{did}_cutoff.csv",
+            ),
+            cutoff_slopes,
+            delimiter=",",
+        )
+
 
         np.savetxt(
             os.path.join(
