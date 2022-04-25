@@ -866,8 +866,8 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
         trace = pm.sample(
             # draws=15000,
             # tune=3000,
-            draws=2000,
-            tune=500,
+            draws=10000,
+            tune=2500,
             init="adapt_diag",
             cores=-1,
             return_inferencedata=True,
