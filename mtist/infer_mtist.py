@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 import pandas as pd
-import pymc3 as pm
 import statsmodels.api as sm
 from sklearn import linear_model
 from sklearn.linear_model import LinearRegression
@@ -807,6 +806,7 @@ def infer_from_did_elasticnet_cv(did, debug=False):
 
 
 def run_mkspikeseq(X, y, progressbar=False, zellner=False):
+    import pymc3 as pm
 
     """regresses X on y using MKSpikeSeq, returns trace"""
 
@@ -984,7 +984,6 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
             cutoff_slopes,
             delimiter=",",
         )
-
 
         np.savetxt(
             os.path.join(

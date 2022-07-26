@@ -358,7 +358,7 @@ def calculate_n_datasets():
         n_timepoints=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_FREQ_PARAMS),
         n_noises=len(mdg.MASTER_DATASET_DEFAULTS.NOISE_SCALES),
         n_ecosystems=len(GLOBALS.GT_NAMES),
-        n_seq_depths=2,  # Hard coded,
+        n_seq_depths=1,  # Hard coded - as of 3/26/22, seq_depth has been removed
         n_sampling_schemes=len(am.ASSEMBLE_MTIST_DEFAULTS.SAMPLING_SCHEME_PARAMS),
     )
     n_datasets = reduce(

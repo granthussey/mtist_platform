@@ -56,7 +56,8 @@ class MASTER_DATASET_DEFAULTS:
 
     # fmt: on
 
-    NOISE_SCALES = [0.01, 0.05, 0.10]
+    # NOISE_SCALES = [0.01, 0.05, 0.10]
+    NOISE_SCALES = [0.01, 0.10]
 
 
 def generate_mtist_master_datasets(save_datasets=True, save_example_figures=True):

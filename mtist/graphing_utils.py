@@ -49,7 +49,8 @@ def savefig(fig, filename, ft=None):
 
 
 def score_heatmap(meta, df_es_scores, plot_floored=True, plot_low_seq_depth=True, **kwargs):
-    """meta should have index of did"""
+    """meta should have index of did
+    No longer works now that sep-depth removed"""
 
     # Get heatmaps across seq_depth low, high and raw, floored scores
 
