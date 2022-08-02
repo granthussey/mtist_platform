@@ -7,6 +7,7 @@ from mtist import mtist_utils as mu
 
 
 class ASSEMBLE_MTIST_DEFAULTS:
+
     RANDOM_SEED = 89237560
     seq_depth_th = 0.01
 
