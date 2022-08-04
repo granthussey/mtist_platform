@@ -1054,17 +1054,14 @@ def infer_and_score_all(save_inference=True, save_scores=True):
 
     # Begin inference
 
-    # fns = glob.glob(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
-    # fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
-
     n_datasets = mu.calculate_n_datasets()
     fns = [
         os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(n_datasets)
     ]
 
-    th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
+    # th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
     raw_scores = {}
-    floored_scores = {}
+    # floored_scores = {}
     inferred_aijs = {}
 
     for fn in fns:
@@ -1081,18 +1078,25 @@ def infer_and_score_all(save_inference=True, save_scores=True):
         es_score = calculate_es_score(true_aij, inferred_aij)
 
         # Calculate floored ES score
-        floored_inferred_aij = inferred_aij.copy()  # copy aij
-        mask = np.abs(floored_inferred_aij) < th  # determine where to floor
-        floored_inferred_aij[mask] = 0  # floor below the th
-        es_score_floored = calculate_es_score(true_aij, floored_inferred_aij)
+        # floored_inferred_aij = inferred_aij.copy()  # copy aij
+        # mask = np.abs(floored_inferred_aij) < th  # determine where to floor
+        # floored_inferred_aij[mask] = 0  # floor below the th
+        # es_score_floored = calculate_es_score(true_aij, floored_inferred_aij)
 
         # Save the scores
         raw_scores[did] = es_score
-        floored_scores[did] = es_score_floored
+        # floored_scores[did] = es_score_floored
         inferred_aijs[did] = inferred_aij.copy()
 
     df_es_scores = pd.DataFrame(
-        [raw_scores, floored_scores], index=["raw", "floored"]
+        [
+            raw_scores,
+            # floored_scores
+        ],
+        index=[
+            "raw",
+            # "floored"
+        ],
     ).T.sort_index()
 
     if save_inference:
@@ -1142,16 +1146,12 @@ def infer_and_save_portion(dids, save_inference=True, save_scores=True):
 
     # Begin inference
 
-    # fns = glob.glob(os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, "dataset_*"))
-    # fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in range(1134)]
-
-    # n_datasets = mu.calculate_n_datasets()
     fns = [os.path.join(mu.GLOBALS.MTIST_DATASET_DIR, f"dataset_{i}.csv") for i in dids]
 
-    th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
+    # th = INFERENCE_DEFAULTS.inference_threshold  # for the floored_scores
 
     raw_scores = {}
-    floored_scores = {}
+    # floored_scores = {}
     inferred_aijs = {}
 
     for fn in fns:
@@ -1168,20 +1168,27 @@ def infer_and_save_portion(dids, save_inference=True, save_scores=True):
         es_score = calculate_es_score(true_aij, inferred_aij)
 
         # Calculate floored ES score
-        floored_inferred_aij = inferred_aij.copy()  # copy aij
-        mask = np.abs(floored_inferred_aij) < th  # determine where to floor
-        floored_inferred_aij[mask] = 0  # floor below the th
-        es_score_floored = calculate_es_score(true_aij, floored_inferred_aij)
+        # floored_inferred_aij = inferred_aij.copy()  # copy aij
+        # mask = np.abs(floored_inferred_aij) < th  # determine where to floor
+        # floored_inferred_aij[mask] = 0  # floor below the th
+        # es_score_floored = calculate_es_score(true_aij, floored_inferred_aij)
 
         # Save the scores
         raw_scores[did] = es_score
-        floored_scores[did] = es_score_floored
+        # floored_scores[did] = es_score_floored
         inferred_aijs[did] = inferred_aij.copy()
 
         # test saving per did
 
     df_es_scores = pd.DataFrame(
-        [raw_scores, floored_scores], index=["raw", "floored"]
+        [
+            raw_scores,
+            #  floored_scores
+        ],
+        index=[
+            "raw",
+            #   "floored" 
+        ],
     ).T.sort_index()
 
     if save_inference:
@@ -1232,4 +1239,4 @@ class INFERENCE_DEFAULTS:
     INFERENCE_FUNCTION = infer_from_did
     INFERENCE_PREFIX = ""
 
-    inference_threshold = 1 / 3
+    # inference_threshold = 1 / 3

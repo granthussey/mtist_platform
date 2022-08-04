@@ -15,15 +15,6 @@ class ASSEMBLE_MTIST_DEFAULTS:
     SAMPLING_FREQ_PARAMS = [5, 15]
     SAMPLING_SCHEME_PARAMS = ["even", "random", "seq"]
 
-    ### Pre-subset parameters ###
-    # N_TIMESERIES_PARAMS = [5, 10, 50]
-    # SAMPLING_FREQ_PARAMS = [5, 10, 15]
-    # SAMPLING_SCHEME_PARAMS = ["even", "random", "seq"]
-
-
-### GLOBAL VARIABLES ###
-# RNG = ASSEMBLE_MTIST_DEFAULTS.RNG
-
 
 def gen_even_idx(sf):
     """sf is sampling_frequency"""
@@ -155,7 +146,6 @@ def generate_metadata():
                 n_timeseries,
                 n_timepoints,
                 ss,
-                # sd
             ],
             index=[
                 "did",
@@ -165,21 +155,16 @@ def generate_metadata():
                 "n_timeseries",
                 "n_timepoints",
                 "sampling_scheme",
-                # "seq_depth",
             ],
         ).T
 
         # Combine
         meta = pd.concat((meta, cur_meta_row))
 
-    # meta = meta.set_index("did").sort_index()
-
     return meta
 
 
 def assemble_mtist():
-
-    # mdataset_fps = glob.glob(os.path.join(mu.GLOBALS.MASTER_DATASET_DIR, "master_dataset_*.csv"))
 
     ## Gather what master datasets/conditions will go into each mtist dataset ##
     master_meta = pd.read_csv(
@@ -271,7 +256,6 @@ def assemble_mtist():
 
         df_sampled = df_sampled.reset_index(drop=True).assign(
             did=did,
-            # seq_depth="high",
             n_timeseries=nts,
             n_timepoints=sf,
             sampling_scheme=ss,
