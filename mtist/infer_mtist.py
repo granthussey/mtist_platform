@@ -866,8 +866,8 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
         trace = pm.sample(
             # draws=15000,
             # tune=3000,
-            draws=10000,
-            tune=2500,
+            draws=5000,
+            tune=1000,
             init="adapt_diag",
             cores=-1,
             return_inferencedata=True,
@@ -948,52 +948,90 @@ def infer_mkspikeseq_by_did(did, debug=False, progressbar=False, save_trace=True
         except Exception as e:
             print(e)
 
-        for cur_trace_number, trace in enumerate(regs):
-            trace["posterior"].to_netcdf(
+        try:
+
+            import pickle
+
+            def save_pickle(thing, fn):
+                with open("{}.pickle".format(fn), "wb") as handle:
+                    pickle.dump(thing, handle, protocol=3)
+
+            save_pickle(
+                regs,
                 os.path.join(
                     mu.GLOBALS.MTIST_DATASET_DIR,
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
-                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}trace_{cur_trace_number}_for_{did}.nc",
+                    f"regs_{did}",
                 ),
             )
 
-            trace["sample_stats"].to_netcdf(
+            save_pickle(
+                slopes,
                 os.path.join(
                     mu.GLOBALS.MTIST_DATASET_DIR,
                     f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
-                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}sample_stats_{cur_trace_number}_for_{did}.nc",
+                    f"slopes_{did}",
                 ),
             )
 
-        np.savetxt(
-            os.path.join(
-                mu.GLOBALS.MTIST_DATASET_DIR,
-                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
-                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_for_{did}.csv",
-            ),
-            slopes,
-            delimiter=",",
-        )
+            save_pickle(
+                intercepts,
+                os.path.join(
+                    mu.GLOBALS.MTIST_DATASET_DIR,
+                    f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+                    f"intercepts_{did}",
+                ),
+            )
+        except Exception as e:
+            print(e)
 
-        np.savetxt(
-            os.path.join(
-                mu.GLOBALS.MTIST_DATASET_DIR,
-                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
-                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_for_{did}_cutoff.csv",
-            ),
-            cutoff_slopes,
-            delimiter=",",
-        )
 
-        np.savetxt(
-            os.path.join(
-                mu.GLOBALS.MTIST_DATASET_DIR,
-                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
-                f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}growth_rates_for_{did}.csv",
-            ),
-            intercepts,
-            delimiter=",",
-        )
+        # for cur_trace_number, trace in enumerate(regs):
+        #     trace["posterior"].to_netcdf(
+        #         os.path.join(
+        #             mu.GLOBALS.MTIST_DATASET_DIR,
+        #             f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+        #             f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}trace_{cur_trace_number}_for_{did}.nc",
+        #         ),
+        #     )
+
+        #     trace["sample_stats"].to_netcdf(
+        #         os.path.join(
+        #             mu.GLOBALS.MTIST_DATASET_DIR,
+        #             f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+        #             f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}sample_stats_{cur_trace_number}_for_{did}.nc",
+        #         ),
+        #     )
+
+        # np.savetxt(
+        #     os.path.join(
+        #         mu.GLOBALS.MTIST_DATASET_DIR,
+        #         f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+        #         f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_for_{did}.csv",
+        #     ),
+        #     slopes,
+        #     delimiter=",",
+        # )
+
+        # np.savetxt(
+        #     os.path.join(
+        #         mu.GLOBALS.MTIST_DATASET_DIR,
+        #         f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+        #         f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inferred_for_{did}_cutoff.csv",
+        #     ),
+        #     cutoff_slopes,
+        #     delimiter=",",
+        # )
+
+        # np.savetxt(
+        #     os.path.join(
+        #         mu.GLOBALS.MTIST_DATASET_DIR,
+        #         f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}inference_result",
+        #         f"{INFERENCE_DEFAULTS.INFERENCE_PREFIX}growth_rates_for_{did}.csv",
+        #     ),
+        #     intercepts,
+        #     delimiter=",",
+        # )
 
     if debug:
         return (slopes, intercepts, regs)
@@ -1187,7 +1225,7 @@ def infer_and_save_portion(dids, save_inference=True, save_scores=True):
         ],
         index=[
             "raw",
-            #   "floored" 
+            #   "floored"
         ],
     ).T.sort_index()
 
