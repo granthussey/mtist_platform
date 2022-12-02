@@ -209,3 +209,4 @@ debug_notebooks/
 mtist1.0/exported_figures/*
 mtist1.0/make_figure_inference.ipynb
 testing.ipynb
+mtist1.0/test.ipynb
