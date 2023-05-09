@@ -456,7 +456,7 @@ def infer_from_did_lasso_cv(did, debug=False):
             lassocv = linear_model.LassoCV(
                 cv=5,
                 fit_intercept=True,
-                max_iter=10**7,
+                max_iter=10 ** 7,
             )
 
             reg = lassocv.fit(X_train, y_train)
@@ -768,7 +768,7 @@ def infer_from_did_elasticnet_cv(did, debug=False):
                 eps=1e-3,
                 cv=5,
                 fit_intercept=True,
-                max_iter=10**7,
+                max_iter=10 ** 7,
             )
 
             reg = enet.fit(X_train, y_train)
@@ -855,7 +855,7 @@ def run_mkspikeseq(X, y, progressbar=False, zellner=False):
         # mean_drugs = pm.math.dot(X_drugs, xi_drugs * beta_drugs)
 
         my_sigma = pm.HalfNormal("my_sigma", 10)
-        intercp = pm.Bound(pm.Normal, lower=0.0)("intercp", mu=1.0, tau=(init_r_std**2) * 1e2)
+        intercp = pm.Bound(pm.Normal, lower=0.0)("intercp", mu=1.0, tau=(init_r_std ** 2) * 1e2)
 
         # my_var = pm.Normal("my_var", mean_drugs + mean_taxa + intercp, my_sigma, observed=y)
         my_var = pm.Normal("my_var", mean_taxa + intercp, my_sigma, observed=y)
@@ -1048,6 +1048,9 @@ def calculate_es_score(true_aij, inferred_aij) -> float:
     ===============
     ES_score: float
     """
+
+    if truth.shape != inferred.shape:
+        raise ValueError("truth and inferred must have the same shape")
 
     truth = pd.DataFrame(true_aij).copy()
     inferred = pd.DataFrame(inferred_aij).copy()
