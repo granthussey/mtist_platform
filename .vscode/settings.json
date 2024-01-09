@@ -1,6 +1,0 @@
-{
-    "python.pythonPath": "/Users/granthussey/opt/miniconda3/envs/lab/bin/python",
-    "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.enabled": true
-}
